@@ -1,0 +1,610 @@
+<div class="section8-container">
+  <h1>Signal Forms en Angular 21+ - Guía Completa</h1>
+
+  <!-- Ejemplo 1: Formulario Simple Básico -->
+  <section class="example-card">
+    <h2>1. Formulario Simple Básico</h2>
+    <p class="description">
+      Introducción a Signal Forms con un formulario básico usando FormControl y FormGroup
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> Este es el ejemplo más básico de un formulario reactivo en Angular 21+. 
+      Utilizamos FormGroup para agrupar múltiples FormControl. Cada control tiene validadores 
+      síncronos como Validators.required, Validators.email y Validators.minLength(). 
+      El estado del formulario (válido/inválido, pristine/dirty, touched/untouched) se gestiona automáticamente. 
+      Los Signal Forms mantienen la reactividad nativa de Angular, permitiendo que el template reaccione instantáneamente 
+      a cambios en los valores o estado de validación sin necesidad de código adicional.
+    </p>
+
+    <form [formGroup]="simpleForm" (ngSubmit)="onSimpleSubmit()" class="form">
+      <div class="form-group">
+        <label for="username">Nombre de usuario:</label>
+        <input 
+          id="username"
+          type="text" 
+          formControlName="username"
+          [class.invalid]="isFieldInvalid(simpleForm, 'username')"
+          [class.valid]="isFieldValid(simpleForm, 'username')"
+          placeholder="Ingrese su usuario"
+        />
+        @if (getFieldError(simpleForm, 'username')) {
+          <span class="error-message">{{ getFieldError(simpleForm, 'username') }}</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input 
+          id="email"
+          type="email" 
+          formControlName="email"
+          [class.invalid]="isFieldInvalid(simpleForm, 'email')"
+          [class.valid]="isFieldValid(simpleForm, 'email')"
+          placeholder="email@ejemplo.com"
+        />
+        @if (getFieldError(simpleForm, 'email')) {
+          <span class="error-message">{{ getFieldError(simpleForm, 'email') }}</span>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="simpleForm.invalid" class="btn-primary">
+          Enviar
+        </button>
+        <button type="button" (click)="simpleForm.reset()" class="btn-secondary">
+          Limpiar
+        </button>
+      </div>
+
+      <div class="form-status">
+        <span class="badge" [class.success]="simpleForm.valid" [class.error]="simpleForm.invalid">
+          Estado: {{ simpleForm.valid ? 'Válido' : 'Inválido' }}
+        </span>
+        <span class="badge">
+          Pristine: {{ simpleForm.pristine ? 'Sí' : 'No' }}
+        </span>
+        <span class="badge">
+          Touched: {{ simpleForm.touched ? 'Sí' : 'No' }}
+        </span>
+      </div>
+    </form>
+  </section>
+
+  <!-- Ejemplo 2-3: Validación Básica y Estado de Campos -->
+  <section class="example-card">
+    <h2>2-3. Validación Básica y Estados de Campo (FieldState)</h2>
+    <p class="description">
+      Demostración de validadores integrados, mensajes de error personalizados y estados de campo
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> Cada FormControl mantiene un FieldState que incluye: 
+      value (valor actual), valid/invalid (estado de validación), touched/untouched 
+      (si el usuario interactuó), dirty/pristine (si cambió el valor), errors (objeto con errores), 
+      y status ('VALID', 'INVALID', 'PENDING', 'DISABLED'). La propiedad errors es clave: contiene 
+      un objeto donde cada validador fallido agrega una propiedad. Por ejemplo, minLength agrega 
+      un objeto con requiredLength y actualLength. Usamos estos datos para mostrar mensajes específicos. 
+      El FieldTree es la estructura jerárquica de todos los controles del formulario, permitiendo validación 
+      en cascada y acceso a cualquier campo mediante formGroup.get('fieldName').
+    </p>
+
+    <form [formGroup]="userForm" class="form">
+      <div class="form-group">
+        <label for="name">Nombre completo: *</label>
+        <input 
+          id="name"
+          type="text" 
+          formControlName="name"
+          [class.invalid]="isFieldInvalid(userForm, 'name')"
+          [class.valid]="isFieldValid(userForm, 'name')"
+          placeholder="Juan Pérez"
+        />
+        @if (getFieldError(userForm, 'name')) {
+          <span class="error-message">{{ getFieldError(userForm, 'name') }}</span>
+        }
+        <div class="field-info">
+          <small>Estado: {{ userForm.get('name')?.status }}</small>
+          <small>Tocado: {{ userForm.get('name')?.touched ? 'Sí' : 'No' }}</small>
+          <small>Valor: "{{ userForm.get('name')?.value }}"</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="user-email">Email: *</label>
+        <input 
+          id="user-email"
+          type="email" 
+          formControlName="email"
+          [class.invalid]="isFieldInvalid(userForm, 'email')"
+          [class.valid]="isFieldValid(userForm, 'email')"
+          placeholder="correo@ejemplo.com"
+        />
+        @if (getFieldError(userForm, 'email')) {
+          <span class="error-message">{{ getFieldError(userForm, 'email') }}</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="age">Edad: *</label>
+        <input 
+          id="age"
+          type="number" 
+          formControlName="age"
+          [class.invalid]="isFieldInvalid(userForm, 'age')"
+          [class.valid]="isFieldValid(userForm, 'age')"
+          placeholder="18"
+        />
+        @if (getFieldError(userForm, 'age')) {
+          <span class="error-message">{{ getFieldError(userForm, 'age') }}</span>
+        }
+        @if (isAdult()) {
+          <span class="info-message">✓ Eres mayor de edad</span>
+        }
+      </div>
+    </form>
+  </section>
+
+  <!-- Ejemplo 4-5: Validadores Personalizados -->
+  <section class="example-card">
+    <h2>4-5. Validadores Personalizados y Visualización de Errores</h2>
+    <p class="description">
+      Creación de validadores personalizados para reglas de negocio específicas
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> Los validadores personalizados son funciones que retornan ValidatorFn. 
+      Reciben un AbstractControl y devuelven ValidationErrors o null. Si retornan null, 
+      el campo es válido. Si retornan un objeto, cada propiedad representa un error. En este ejemplo, 
+      passwordStrengthValidator verifica múltiples condiciones (mayúsculas, minúsculas, números, caracteres especiales) 
+      y retorna un objeto detallado con el estado de cada condición. Esto permite mostrar exactamente qué falta para que la 
+      contraseña sea válida. El phoneValidator usa expresiones regulares para validar formatos específicos. 
+      Los validadores personalizados son reutilizables y pueden combinarse con validadores integrados usando arrays.
+    </p>
+
+    <form [formGroup]="userForm" class="form">
+      <div class="form-group">
+        <label for="password">Contraseña: *</label>
+        <input 
+          id="password"
+          type="password" 
+          formControlName="password"
+          [class.invalid]="isFieldInvalid(userForm, 'password')"
+          [class.valid]="isFieldValid(userForm, 'password')"
+          placeholder="Contraseña segura"
+        />
+        @if (getFieldError(userForm, 'password')) {
+          <span class="error-message">{{ getFieldError(userForm, 'password') }}</span>
+        }
+        <div class="password-requirements">
+          <small>Requisitos: mínimo 8 caracteres, mayúscula, minúscula, número y carácter especial</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirmar contraseña: *</label>
+        <input 
+          id="confirmPassword"
+          type="password" 
+          formControlName="confirmPassword"
+          [class.invalid]="isFieldInvalid(userForm, 'confirmPassword')"
+          [class.valid]="isFieldValid(userForm, 'confirmPassword')"
+          placeholder="Repite la contraseña"
+        />
+        @if (getFieldError(userForm, 'confirmPassword')) {
+          <span class="error-message">{{ getFieldError(userForm, 'confirmPassword') }}</span>
+        }
+      </div>
+
+      @if (showPhoneField()) {
+        <div class="form-group">
+          <label for="phone">
+            Teléfono:
+            @if (requirePhoneValidation()) {
+              <span class="required">*</span>
+            }
+          </label>
+          <input 
+            id="phone"
+            type="tel" 
+            formControlName="phone"
+            [class.invalid]="isFieldInvalid(userForm, 'phone')"
+            [class.valid]="isFieldValid(userForm, 'phone')"
+            placeholder="1234567890"
+          />
+          @if (getFieldError(userForm, 'phone')) {
+            <span class="error-message">{{ getFieldError(userForm, 'phone') }}</span>
+          }
+        </div>
+      }
+
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" formControlName="acceptTerms" />
+          Acepto términos y condiciones *
+        </label>
+        @if (isFieldInvalid(userForm, 'acceptTerms')) {
+          <span class="error-message">Debes aceptar los términos</span>
+        }
+      </div>
+
+      @if (getFormError(userForm)) {
+        <div class="form-error">{{ getFormError(userForm) }}</div>
+      }
+
+      <div class="form-actions">
+        <button type="button" (click)="togglePhoneField()" class="btn-secondary">
+          {{ showPhoneField() ? 'Ocultar' : 'Mostrar' }} Teléfono
+        </button>
+        <button type="button" (click)="togglePhoneValidation()" class="btn-secondary">
+          {{ requirePhoneValidation() ? 'Hacer Opcional' : 'Hacer Requerido' }} Teléfono
+        </button>
+        <button type="button" (click)="onUserFormSubmit()" [disabled]="userForm.invalid" class="btn-primary">
+          Validar Formulario
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Ejemplo 6-7: Validación Cruzada y Condicional -->
+  <section class="example-card">
+    <h2>6-7. Validación Cruzada entre Campos y Condicional</h2>
+    <p class="description">
+      Validadores que comparan múltiples campos y aplicación de reglas condicionales
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> La validación cruzada (Cross-Field Validation) se aplica a nivel de 
+      FormGroup, no de campos individuales. Se configura en el tercer parámetro del constructor de FormGroup 
+      mediante la opción validators. El validador recibe el grupo completo y puede acceder a cualquier campo 
+      con group.get('fieldName'). passwordMatchValidator compara dos campos y retorna error si 
+      no coinciden. La validación condicional (Conditional Validation) evalúa reglas que dependen de otros valores: 
+      agePhoneValidator requiere teléfono solo si la edad es mayor o igual a 65. Estos errores se almacenan en 
+      formGroup.errors, no en campos individuales, por lo que deben mostrarse a nivel de formulario. Es un patrón 
+      poderoso para reglas de negocio complejas que involucran múltiples campos relacionados.
+    </p>
+
+    <div class="info-box">
+      <h4>Validaciones Activas:</h4>
+      <ul>
+        <li>✓ Las contraseñas deben coincidir (Cross-Field)</li>
+        <li>✓ Teléfono requerido si edad >= 65 años (Condicional)</li>
+        <li>✓ Email se puede deshabilitar dinámicamente</li>
+      </ul>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" (click)="disableEmailField()" class="btn-secondary">
+        Deshabilitar Email
+      </button>
+      <button type="button" (click)="enableEmailField()" class="btn-secondary">
+        Habilitar Email
+      </button>
+    </div>
+  </section>
+
+  <!-- Ejemplo 8-9: Formularios Anidados -->
+  <section class="example-card">
+    <h2>8-9. Formularios Anidados (Nested Forms)</h2>
+    <p class="description">
+      Estructuras de formularios complejas con FormGroups anidados
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> Los formularios anidados permiten organizar campos relacionados en grupos lógicos. 
+      Un FormGroup puede contener otros FormGroup como valores, creando una jerarquía o árbol 
+      (FieldTree). En este ejemplo, el formulario de dirección es un grupo independiente que se puede integrar 
+      en formularios más grandes. Los formularios anidados se validan en cascada: el padre es inválido si algún hijo es inválido. 
+      Para acceder a campos anidados se usa notación de punto: formGroup.get('address.street') o arrays: 
+      formGroup.get(['address', 'street']). Los valores se estructuran jerárquicamente. 
+      Este patrón es esencial para formularios grandes, permitiendo modularidad, reutilización y mejor organización del código.
+    </p>
+
+    <form [formGroup]="addressForm" class="form">
+      <h3>Dirección</h3>
+      
+      <div class="form-group">
+        <label for="street">Calle: *</label>
+        <input 
+          id="street"
+          type="text" 
+          formControlName="street"
+          [class.invalid]="isFieldInvalid(addressForm, 'street')"
+          [class.valid]="isFieldValid(addressForm, 'street')"
+          placeholder="Calle Principal 123"
+        />
+        @if (getFieldError(addressForm, 'street')) {
+          <span class="error-message">{{ getFieldError(addressForm, 'street') }}</span>
+        }
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="city">Ciudad: *</label>
+          <input 
+            id="city"
+            type="text" 
+            formControlName="city"
+            [class.invalid]="isFieldInvalid(addressForm, 'city')"
+            [class.valid]="isFieldValid(addressForm, 'city')"
+            placeholder="Ciudad"
+          />
+          @if (getFieldError(addressForm, 'city')) {
+            <span class="error-message">{{ getFieldError(addressForm, 'city') }}</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="zipCode">Código Postal: *</label>
+          <input 
+            id="zipCode"
+            type="text" 
+            formControlName="zipCode"
+            [class.invalid]="isFieldInvalid(addressForm, 'zipCode')"
+            [class.valid]="isFieldValid(addressForm, 'zipCode')"
+            placeholder="12345"
+          />
+          @if (getFieldError(addressForm, 'zipCode')) {
+            <span class="error-message">{{ getFieldError(addressForm, 'zipCode') }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="form-status">
+        <span class="badge" [class.success]="addressForm.valid" [class.error]="addressForm.invalid">
+          Dirección: {{ addressForm.valid ? 'Válida' : 'Inválida' }}
+        </span>
+      </div>
+    </form>
+  </section>
+
+  <!-- Ejemplo 10-11: FormArray - Listas Dinámicas -->
+  <section class="example-card">
+    <h2>10-11. FormArray - Trabajando con Listas Dinámicas</h2>
+    <p class="description">
+      Gestión de listas de elementos con capacidad para agregar y eliminar items dinámicamente
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> FormArray es un contenedor para un número variable de controles del mismo tipo. 
+      A diferencia de FormGroup (acceso por nombre), FormArray usa índices numéricos. Cada elemento puede 
+      ser un FormControl, FormGroup o incluso otro FormArray (arrays anidados). 
+      Métodos clave: push(control) agrega al final, removeAt(index) elimina por posición, 
+      insert(index, control) inserta en posición específica, at(index) accede a un elemento, 
+      clear() vacía el array, y length retorna el total. En el template usamos 
+      la directiva for para iterar. Cada control se enlaza con formControl. Los FormArrays se validan en grupo: 
+      si un item es inválido, todo el array es inválido. Es perfecto para formularios con listas de 
+      skills, teléfonos, direcciones, etc.
+    </p>
+
+    <form [formGroup]="skillsForm" class="form">
+      <h3>Habilidades Técnicas</h3>
+      
+      <div formArrayName="skills">
+        @for (control of skills.controls; track $index; let i = $index) {
+          <div class="array-item">
+            <div class="form-group flex-grow">
+              <label>Habilidad {{ i + 1 }}: *</label>
+              <input 
+                type="text" 
+                [formControl]="$any(control)"
+                [class.invalid]="control.invalid && control.touched"
+                [class.valid]="control.valid && control.touched"
+                placeholder="Ej: Angular, TypeScript, etc."
+              />
+              @if (control.errors && control.touched) {
+                @if (control.errors['required']) {
+                  <span class="error-message">Este campo es requerido</span>
+                }
+                @if (control.errors['minlength']) {
+                  <span class="error-message">Mínimo 2 caracteres</span>
+                }
+              }
+            </div>
+            <button 
+              type="button" 
+              (click)="removeSkill(i)" 
+              class="btn-danger btn-icon"
+              [disabled]="skills.length === 1"
+              title="Eliminar habilidad"
+            >
+              ✕
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="button" (click)="addSkill()" class="btn-secondary">
+          + Agregar Habilidad
+        </button>
+        <span class="info-text">Total: {{ skills.length }} habilidades</span>
+      </div>
+
+      <div class="form-status">
+        <span class="badge" [class.success]="skillsForm.valid" [class.error]="skillsForm.invalid">
+          Lista: {{ skillsForm.valid ? 'Válida' : 'Inválida' }}
+        </span>
+      </div>
+    </form>
+  </section>
+
+  <!-- Ejemplo 12: Formulario Completo Integrado -->
+  <section class="example-card">
+    <h2>12. Formulario Completo con Validación Multi-Campo</h2>
+    <p class="description">
+      Integración de todos los conceptos: formularios anidados, arrays, validaciones múltiples y envío al servidor
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> Este ejemplo integra todos los conceptos anteriores en un formulario completo de producción. 
+      Combina FormGroups anidados (personalInfo, address), FormArray (skills), validaciones síncronas 
+      y asíncronas, estado de envío (isSubmitting), manejo de errores del servidor, y feedback visual completo. 
+      El proceso de envío incluye: 1) Validación local, 2) Estado "submitting" con UI bloqueada, 3) Llamada simulada al servidor, 
+      4) Manejo de respuesta exitosa o errores, 5) Aplicación de errores del servidor a campos específicos usando 
+      control.setErrors(), 6) Feedback visual con mensajes y estados. Los errores del servidor se mapean a campos 
+      usando notación de punto (ej: 'personalInfo.email'). Este patrón es el estándar en aplicaciones reales donde la validación 
+      del servidor puede detectar conflictos que el cliente no puede conocer (emails duplicados, usuarios existentes, etc.).
+    </p>
+
+    <form [formGroup]="completeForm" (ngSubmit)="onCompleteFormSubmit()" class="form complete-form">
+      <fieldset formGroupName="personalInfo">
+        <legend>Información Personal</legend>
+        
+        <div class="form-group">
+          <label for="complete-name">Nombre completo: *</label>
+          <input 
+            id="complete-name"
+            type="text" 
+            formControlName="name"
+            placeholder="Tu nombre completo"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="complete-email">Email: *</label>
+          <input 
+            id="complete-email"
+            type="email" 
+            formControlName="email"
+            placeholder="tu@email.com"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="complete-age">Edad: *</label>
+          <input 
+            id="complete-age"
+            type="number" 
+            formControlName="age"
+            placeholder="18"
+          />
+        </div>
+      </fieldset>
+
+      <fieldset formGroupName="address">
+        <legend>Dirección</legend>
+        
+        <div class="form-group">
+          <label for="complete-street">Calle: *</label>
+          <input 
+            id="complete-street"
+            type="text" 
+            formControlName="street"
+            placeholder="Calle Principal 123"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="complete-city">Ciudad: *</label>
+            <input 
+              id="complete-city"
+              type="text" 
+              formControlName="city"
+              placeholder="Ciudad"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="complete-zipCode">Código Postal: *</label>
+            <input 
+              id="complete-zipCode"
+              type="text" 
+              formControlName="zipCode"
+              placeholder="12345"
+            />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Habilidades</legend>
+        
+        <div formArrayName="skills">
+          @for (control of completeSkills.controls; track $index; let i = $index) {
+            <div class="array-item">
+              <input 
+                type="text" 
+                [formControl]="$any(control)"
+                placeholder="Habilidad {{ i + 1 }}"
+              />
+              <button 
+                type="button" 
+                (click)="removeCompleteSkill(i)" 
+                class="btn-danger btn-icon"
+              >
+                ✕
+              </button>
+            </div>
+          }
+        </div>
+
+        <button type="button" (click)="addCompleteSkill()" class="btn-secondary">
+          + Agregar Habilidad
+        </button>
+      </fieldset>
+
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" formControlName="notifications" />
+          Recibir notificaciones
+        </label>
+      </div>
+
+      @if (submitError()) {
+        <div class="alert alert-error">
+          {{ submitError() }}
+        </div>
+      }
+
+      @if (submitSuccess()) {
+        <div class="alert alert-success">
+          ✓ Formulario enviado correctamente
+        </div>
+      }
+
+      @if (serverErrors().length > 0) {
+        <div class="alert alert-warning">
+          <strong>Errores del servidor:</strong>
+          <ul>
+            @for (error of serverErrors(); track error.field) {
+              <li>{{ error.field }}: {{ error.message }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          [disabled]="completeForm.invalid || isSubmitting()" 
+          class="btn-primary"
+        >
+          @if (isSubmitting()) {
+            <span class="spinner"></span> Enviando...
+          } @else {
+            Enviar Formulario
+          }
+        </button>
+        <button 
+          type="button" 
+          (click)="completeForm.reset()" 
+          class="btn-secondary"
+          [disabled]="isSubmitting()"
+        >
+          Limpiar
+        </button>
+      </div>
+
+      <div class="form-status">
+        <span class="badge" [class.success]="completeForm.valid" [class.error]="completeForm.invalid">
+          Estado General: {{ completeForm.valid ? 'Válido' : 'Inválido' }}
+        </span>
+        <span class="badge" [class.active]="isSubmitting()">
+          Submitting: {{ isSubmitting() ? 'Sí' : 'No' }}
+        </span>
+      </div>
+    </form>
+  </section>
+
+
+  <div class="form-actions-global">
+    <button type="button" (click)="resetAllForms()" class="btn-danger">
+      Resetear Todos los Formularios
+    </button>
+  </div>
+</div>

@@ -1,0 +1,53 @@
+<div class="cart-container signal">
+  <h4>Carrito con Signals</h4>
+  
+  <div class="cart-info">
+    <p><strong>Items:</strong> {{cartService.itemCount()}}</p>
+    <p><strong>Total:</strong> ${{cartService.total() | number:'1.2-2'}}</p>
+    <p><strong>Estado:</strong> {{cartService.isEmpty() ? 'Vacío' : 'Con items'}}</p>
+  </div>
+
+  <div class="add-products">
+    <h5>Agregar Productos:</h5>
+    <div class="button-group">
+      <button (click)="addProduct('Laptop', 999.99)">Laptop ($999.99)</button>
+      <button (click)="addProduct('Mouse', 29.99)">Mouse ($29.99)</button>
+      <button (click)="addProduct('Teclado', 79.99)">Teclado ($79.99)</button>
+    </div>
+  </div>
+
+  <div class="cart-items">
+    <h5>Items en el Carrito:</h5>
+    @if(cartService.isEmpty()) {
+      <p class="empty">El carrito está vacío</p>
+    } @else {
+      <div class="item-list">
+        @for(item of cartService.items(); track item.id) {
+          <div class="item">
+            <span class="item-name">{{item.name}}</span>
+            <span class="item-price">${{item.price | number:'1.2-2'}}</span>
+            <input 
+              type="number" 
+              [value]="item.quantity" 
+              (change)="updateQuantity(item.id, +$any($event.target).value)"
+              min="1"
+              class="quantity-input">
+            <button (click)="removeItem(item.id)" class="remove-btn">Eliminar</button>
+          </div>
+        }
+      </div>
+      <button (click)="clearCart()" class="clear-btn">Vaciar Carrito</button>
+    }
+  </div>
+
+  <div class="code-note">
+    <p><strong>Ventajas Signals:</strong></p>
+    <ul>
+      <li>Sin suscripciones manuales</li>
+      <li>Sin necesidad de OnDestroy</li>
+      <li>Gestión de memoria automática</li>
+      <li>Computed signals se actualizan automáticamente</li>
+      <li>Código más simple y limpio</li>
+    </ul>
+  </div>
+</div>

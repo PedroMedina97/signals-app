@@ -1,0 +1,155 @@
+<!-- EN ESTA SECCION SE EXPLICA COMO FUNCIONAN
+    LOS SIGNALS BASADOS EN API, SIGNAL INPUTS SIGNAL OUTPUTS
+-->
+
+<h3>Signal Inputs</h3>
+<p>Los <strong>Signal Inputs</strong> reemplazan a @Input() tradicional. Son señales reactivas que se actualizan automáticamente cuando cambian los valores del padre, eliminando la necesidad de ngOnChanges, ChangeDetectorRef o setters manuales. Se interpolan con paréntesis: {{'{{'}}nombre(){{'}}'}}.</p>
+
+<button (click)="changeUser()">Cambiar Usuario</button>
+
+<app-usercard [name]="userName()" [age]="userAge()"></app-usercard>
+
+<hr>
+<h3>Signal Outputs</h3>
+<p>Los <strong>Signal Outputs</strong> son eventos que emiten valores desde el componente hijo hacia el padre. Similar a @Output() pero con mejor integración con signals. El padre escucha el evento y actualiza su estado en consecuencia.</p>
+
+<h4>Total: {{total}}</h4>
+<app-counter (incremented)="onIncrement($event)"></app-counter>
+
+<hr>
+<h3>Model Inputs (Two-Way Binding)</h3>
+<p>Los <strong>Model Inputs</strong> crean un binding bidireccional automático usando la sintaxis [(propiedad)]. Combinan un input y un output en uno solo, permitiendo que el hijo actualice directamente el signal del padre sin necesidad de eventos manuales.</p>
+
+<h4>Total MODEL: {{totalModel()}}</h4>
+<app-counter [(countModel)]="totalModel"></app-counter>
+<hr>
+<h3>Uso de viewChild()</h3>
+<p><strong>viewChild()</strong> retorna un signal que contiene una referencia a UN elemento del template. Devuelve Signal&lt;ElementRef | undefined&gt; porque el elemento puede no existir aún. Se resuelve automáticamente cuando el DOM está listo, sin necesidad de ngAfterViewInit.</p>
+
+<input #searchInput type="text">
+<button (click)="focusInput()">Focus Input</button>
+
+<p><strong>Input REF con Effect:</strong> Este input se enfoca automáticamente mediante un effect.</p>
+<input #inputRef type="text">
+
+<hr>
+<h3>Uso de viewChild() desde componente padre</h3>
+<p><strong>viewChild() con componentes:</strong> Permite acceder a métodos y propiedades públicas de un componente hijo. El padre puede invocar métodos del hijo directamente usando la referencia obtenida con viewChild().</p>
+
+<button (click)="callChild()">Saludar desde componente padre</button>
+<app-usercard #card></app-usercard>
+
+<hr>
+<h3>Uso de viewChildren()</h3>
+<p><strong>viewChildren()</strong> retorna un signal con un array de referencias a MÚLTIPLES elementos que comparten la misma template reference. Devuelve Signal&lt;ElementRef[]&gt; y se actualiza automáticamente cuando se agregan o eliminan elementos.</p>
+
+<app-table></app-table>
+
+<hr>
+<h3>Timing de Child Queries con Signals</h3>
+<p><strong>Timing de resolución:</strong> Las queries basadas en signals se resuelven automáticamente cuando los elementos están disponibles en el DOM. Los effects detectan estos cambios inmediatamente. Los elementos condicionales (&#64;if) se resuelven dinámicamente al aparecer/desaparecer.</p>
+
+<div class="timing-example">
+  <h4>Elemento Siempre Visible:</h4>
+  <div #alwaysVisible class="box">Siempre disponible</div>
+  <p>Estado: {{alwaysVisibleStatus()}}</p>
+
+  <h4>Elemento Condicional:</h4>
+  <button (click)="toggleConditional()">{{showConditional() ? 'Ocultar' : 'Mostrar'}} Elemento</button>
+  
+  @if(showConditional()) {
+    <div #conditionalElement class="box">Elemento condicional</div>
+  }
+  
+  <p>Estado: {{conditionalStatus()}}</p>
+  
+  <h4>Log de Timing:</h4>
+  <div class="log">
+    @for(log of timingLogs(); track $index) {
+      <div class="log-entry">{{log}}</div>
+    }
+  </div>
+</div>
+
+<hr>
+<h3>Content Projection: contentChild y contentChildren</h3>
+<p><strong>contentChild() y contentChildren()</strong> son similares a viewChild/viewChildren pero acceden a elementos PROYECTADOS mediante &lt;ng-content&gt;. El componente hijo puede consultar y manipular el contenido que recibe del padre, permitiendo componentes altamente reutilizables.</p>
+
+<div class="content-example">
+  <button (click)="toggleContent()">{{showContent() ? 'Ocultar' : 'Mostrar'}} Contenido Proyectado</button>
+  
+  @if(showContent()) {
+    <app-panel>
+      <!-- Este h2 con #panelTitle será accedido por contentChild -->
+      <h2 #panelTitle>Mi Panel Dinámico</h2>
+      
+      <!-- Este contenido va al slot="body" -->
+      <div slot="body">
+        <p>Este es contenido proyectado usando ng-content con select="[slot='body']"</p>
+        
+        <!-- Estos elementos con #panelItem serán accedidos por contentChildren -->
+        <ul>
+          <li #panelItem>Item 1: Producto A</li>
+          <li #panelItem>Item 2: Producto B</li>
+          <li #panelItem>Item 3: Producto C</li>
+          <li #panelItem>Item 4: Producto D</li>
+        </ul>
+      </div>
+    </app-panel>
+  }
+</div>
+
+<hr>
+<h3>Host Bindings y Host Listeners con Signals</h3>
+<p><strong>Host Bindings y Listeners:</strong> En lugar de usar decoradores &#64;HostBinding y &#64;HostListener, Angular moderno usa la propiedad <code>host</code> en el metadata del componente. Los bindings usan sintaxis de template y se integran perfectamente con signals, permitiendo reactividad automática en propiedades y estilos del elemento host.</p>
+
+<div class="host-example">
+  <h4>Ejemplo Interactivo:</h4>
+  <app-highlight></app-highlight>
+  <app-highlight></app-highlight>
+</div>
+
+<hr>
+<h3>Binding Router Data to Component Inputs</h3>
+<p><strong>Router Input Binding:</strong> Con <code>withComponentInputBinding()</code> habilitado, los route params, query params y route data se vinculan automáticamente a los inputs del componente. Elimina la necesidad de inyectar ActivatedRoute y suscribirse manualmente a los observables.</p>
+
+<div class="router-example">
+  <h4>Ejemplos de Navegación:</h4>
+  
+  <div class="example-group">
+    <h5>Solo Route Param (id):</h5>
+    <div class="links">
+      <a routerLink="/product/123">Producto 123</a>
+      <a routerLink="/product/456">Producto 456</a>
+      <a routerLink="/product/789">Producto 789</a>
+    </div>
+  </div>
+
+  <div class="example-group">
+    <h5>Route Param + Query Params:</h5>
+    <div class="links">
+      <a routerLink="/product/123" [queryParams]="{color: 'red', size: 'large'}">Producto 123 (rojo, grande)</a>
+      <a routerLink="/product/456" [queryParams]="{color: 'blue', size: 'medium'}">Producto 456 (azul, mediano)</a>
+      <a routerLink="/product/789" [queryParams]="{color: 'green', size: 'small'}">Producto 789 (verde, pequeño)</a>
+    </div>
+  </div>
+
+  <div class="example-group">
+    <h5>Todos los tipos de datos:</h5>
+    <p class="note">El route data (category, featured) se define en la configuración de rutas y también se vincula automáticamente.</p>
+    <div class="links">
+      <a routerLink="/product/999" [queryParams]="{color: 'black', size: 'xl'}">Producto Completo</a>
+    </div>
+  </div>
+
+  <div class="explanation-box">
+    <h5>Cómo funciona:</h5>
+    <ol>
+      <li><code>provideRouter(routes, withComponentInputBinding())</code> habilita el binding automático</li>
+      <li>Los <strong>route params</strong> (/product/:id) se mapean a inputs con el mismo nombre</li>
+      <li>Los <strong>query params</strong> (?color=red) se mapean a inputs con el mismo nombre</li>
+      <li>Los <strong>route data</strong> (data: &#123;category: 'x'&#125;) se mapean a inputs con el mismo nombre</li>
+      <li>Todos son <strong>signals reactivos</strong> que se actualizan automáticamente</li>
+    </ol>
+  </div>
+</div>

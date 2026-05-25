@@ -1,0 +1,29 @@
+<div class="panel-container">
+  <div class="panel-header">
+    <!-- ng-content sin selector: proyecta contenido sin referencia específica -->
+    <ng-content></ng-content>
+  </div>
+
+  <div class="panel-body">
+    <!-- ng-content con select: proyecta solo elementos con el atributo slot="body" -->
+    <ng-content select="[slot='body']"></ng-content>
+  </div>
+
+  <div class="panel-info">
+    <h4>Estado del Contenido Proyectado:</h4>
+    <p><strong>Título (contentChild):</strong> {{titleStatus()}}</p>
+    <p><strong>Items (contentChildren):</strong> {{itemsCount()}} elementos encontrados</p>
+    
+    <div class="panel-actions">
+      <button (click)="printItems()">Ver Items en Consola</button>
+      <button (click)="highlightTitle()">Resaltar Título</button>
+    </div>
+
+    <h4>Log de Content Queries:</h4>
+    <div class="log">
+      @for(log of contentLogs(); track $index) {
+        <div class="log-entry">{{log}}</div>
+      }
+    </div>
+  </div>
+</div>

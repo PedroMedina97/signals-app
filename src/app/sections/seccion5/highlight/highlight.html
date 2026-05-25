@@ -1,0 +1,25 @@
+<div class="highlight-content">
+  <h4>Componente Interactivo</h4>
+  <p><strong>Estado:</strong> {{statusText()}}</p>
+  <p><strong>Clicks:</strong> {{clickCount()}}</p>
+  <p><strong>Mouse Enters:</strong> {{mouseEnterCount()}}</p>
+  <p><strong>Color de Fondo:</strong> {{backgroundColor()}}</p>
+  
+  <div class="instructions">
+    <p><strong>Click:</strong> Alterna estado activo</p>
+    <p><strong>Hover:</strong> Activa resaltado</p>
+    <p><strong>Doble Click:</strong> Resetea todo</p>
+  </div>
+
+  <div class="event-log">
+    <h5>Log de Eventos:</h5>
+    <div class="log-entries">
+      @for(log of eventLogs(); track $index) {
+        <div class="log-item">{{log}}</div>
+      }
+      @empty {
+        <div class="log-item empty">No hay eventos aún...</div>
+      }
+    </div>
+  </div>
+</div>

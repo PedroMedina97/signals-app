@@ -1,0 +1,80 @@
+.panel-container {
+  border: 2px solid #9C27B0;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+  margin: 20px 0;
+  overflow: hidden;
+
+  .panel-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .panel-body {
+    padding: 20px;
+    background-color: white;
+    min-height: 100px;
+    border-bottom: 2px solid #E0E0E0;
+  }
+
+  .panel-info {
+    padding: 20px;
+    background-color: #FAFAFA;
+
+    h4 {
+      color: #9C27B0;
+      margin-top: 15px;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    p {
+      margin: 5px 0;
+      color: #333;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+
+      button {
+        background-color: #9C27B0;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+
+        &:hover {
+          background-color: #7B1FA2;
+        }
+      }
+    }
+
+    .log {
+      max-height: 150px;
+      overflow-y: auto;
+      background-color: #1E1E1E;
+      color: #00FF00;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+
+      .log-entry {
+        padding: 3px 0;
+        border-bottom: 1px solid #333;
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+}

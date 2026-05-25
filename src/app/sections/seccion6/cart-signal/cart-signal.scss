@@ -1,0 +1,159 @@
+.cart-container {
+  border: 2px solid #4CAF50;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #F1F8F4;
+  margin: 10px 0;
+
+  h4 {
+    margin-top: 0;
+    color: #2E7D32;
+  }
+
+  .cart-info {
+    background-color: white;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+
+    p {
+      margin: 5px 0;
+      font-size: 16px;
+    }
+  }
+
+  .add-products {
+    margin-bottom: 20px;
+
+    h5 {
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+
+      button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+
+        &:hover {
+          background-color: #388E3C;
+        }
+      }
+    }
+  }
+
+  .cart-items {
+    h5 {
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .empty {
+      color: #999;
+      font-style: italic;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .item-list {
+      background-color: white;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+
+      .item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        gap: 10px;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .item-name {
+          flex: 1;
+          font-weight: 500;
+        }
+
+        .item-price {
+          color: #2F9E44;
+          font-weight: bold;
+          min-width: 80px;
+        }
+
+        .quantity-input {
+          width: 60px;
+          padding: 5px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          text-align: center;
+        }
+
+        .remove-btn {
+          background-color: #E03131;
+          color: white;
+          border: none;
+          padding: 5px 10px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 12px;
+
+          &:hover {
+            background-color: #C92A2A;
+          }
+        }
+      }
+    }
+
+    .clear-btn {
+      width: 100%;
+      background-color: #868E96;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+
+      &:hover {
+        background-color: #495057;
+      }
+    }
+  }
+
+  .code-note {
+    margin-top: 20px;
+    background-color: #D3F9D8;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid #4CAF50;
+
+    p {
+      margin: 0 0 10px 0;
+      font-weight: bold;
+      color: #2E7D32;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+
+      li {
+        margin: 5px 0;
+        color: #555;
+        font-size: 13px;
+      }
+    }
+  }
+}

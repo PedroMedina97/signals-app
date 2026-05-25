@@ -1,0 +1,303 @@
+<div class="section7-container">
+  <h1>APIs de Resource en Angular - Gestión de Estado Moderna</h1>
+
+  <!-- Ejemplo 1: Resource básico con fetch y AbortSignal -->
+  <section class="example-card">
+    <h2>1. Resource Básico con Fetch API</h2>
+    <p class="description">
+      Demuestra la función resource() con fetch, manejo automático de AbortSignal, 
+      signals de estado/carga y capacidad de recarga
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> Este ejemplo muestra cómo utilizar la función <code>resource()</code> para realizar 
+      peticiones HTTP usando la API nativa Fetch. El resource se define con un <code>loader</code> que es una función asíncrona 
+      que recibe un objeto <code>params</code> con un <code>abortSignal</code>. Este signal permite cancelar automáticamente 
+      las peticiones cuando el resource se recarga o el componente se destruye, evitando fugas de memoria. El resource expone 
+      tres signals fundamentales: <code>value()</code> para acceder a los datos, <code>status()</code> que indica el estado 
+      actual ('idle', 'loading', 'success', 'error'), y <code>isLoading()</code> que retorna un booleano. Al cambiar el 
+      <code>userId</code> signal, el resource detecta automáticamente el cambio y realiza una nueva petición, mostrando este 
+      comportamiento reactivo fundamental de las Resource APIs.
+    </p>
+    
+    <div class="controls">
+      <button (click)="changeUserId(1)">Usuario 1</button>
+      <button (click)="changeUserId(2)">Usuario 2</button>
+      <button (click)="changeUserId(3)">Usuario 3</button>
+      <button (click)="userResource.reload()">Recargar</button>
+    </div>
+
+    <div class="status-info">
+      <span class="badge" [class.loading]="userResource.isLoading()">
+        Estado: {{ userResource.status() }}
+      </span>
+      <span class="badge" [class.active]="userResource.isLoading()">
+        Cargando: {{ userResource.isLoading() }}
+      </span>
+    </div>
+
+    @if (userResource.isLoading()) {
+      <div class="loading">Cargando datos del usuario...</div>
+    }
+    @if (userResource.error()) {
+      <div class="error">Error: {{ userResource.error()?.message }}</div>
+    }
+    @if (userResource.value(); as user) {
+      <div class="data-card">
+        <h3>{{ user.name }}</h3>
+        <p>Email: {{ user.email }}</p>
+        <p>Phone: {{ user.phone }}</p>
+      </div>
+    }
+  </section>
+
+  <!-- Ejemplo 2: Resources con parámetros y manejo de errores -->
+  <section class="example-card">
+    <h2>2. Resources con Parámetros y Manejo de Errores</h2>
+    <p class="description">
+      Muestra cómo pasar parámetros a resources, manejar errores de forma elegante,
+      y usar métodos reload() y set() para actualizaciones de valor local
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> En este ejemplo avanzado, el resource lee reactivamente el signal <code>searchQuery()</code> 
+      dentro del loader. Cada vez que el usuario escribe en el input y el valor del signal cambia, el resource se recarga automáticamente. 
+      Se implementa validación con manejo de errores lanzando una excepción cuando la búsqueda tiene menos de 3 caracteres, lo cual 
+      se captura y muestra mediante <code>error()</code>. El método <code>reload()</code> permite refrescar manualmente los datos 
+      sin cambiar parámetros, útil para actualizaciones bajo demanda. El método <code>set()</code> es especialmente poderoso: permite 
+      establecer un valor local directamente sin ejecutar el loader, perfecto para implementar patrones de actualización optimista 
+      (optimistic updates) donde se muestra un resultado inmediato mientras se procesa en background. Los libros son clickeables y 
+      el <code>selectedBookId</code> se sincroniza para el siguiente ejemplo.
+    </p>
+
+    <div class="controls">
+      <input 
+        type="text" 
+        [value]="searchQuery()"
+        (input)="updateSearch($event)"
+        placeholder="Buscar libros (mín 3 caracteres)"
+      />
+      <button (click)="reloadBooks()">Recargar</button>
+      <button (click)="setLocalBookValue()">Establecer Valor Local</button>
+    </div>
+
+    <div class="status-info">
+      <span class="badge" [class.loading]="booksResource.isLoading()">
+        {{ booksResource.status() }}
+      </span>
+    </div>
+
+    @if (booksResource.isLoading()) {
+      <div class="loading">Buscando libros...</div>
+    }
+    @if (booksResource.error()) {
+      <div class="error">{{ booksResource.error()?.message }}</div>
+    }
+    @if (booksResource.value(); as books) {
+      <div class="book-grid">
+        @for (book of books; track book.id) {
+          <div 
+            class="book-card" 
+            [class.selected]="selectedBookId() === book.id"
+            (click)="selectBook(book.id)"
+          >
+            <h4>{{ book.title }}</h4>
+            <p>por {{ book.author }}</p>
+            <p class="price">${{ book.price }}</p>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Ejemplo 3: linkedSignal para selectedBookId -->
+  <section class="example-card">
+    <h2>3. Usando linkedSignal para Estado Derivado</h2>
+    <p class="description">
+      linkedSignal crea un signal escribible que se inicializa desde otro signal.
+      Aquí, selectedBookId deriva del primer libro pero puede cambiarse manualmente
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> <code>linkedSignal()</code> es una nueva API que resuelve un patrón común: crear un signal 
+      escribible que se inicializa computándose desde otros signals. A diferencia de <code>computed()</code> que es de solo lectura, 
+      <code>linkedSignal()</code> permite tanto lectura como escritura. En este caso, <code>selectedBookId</code> se inicializa 
+      automáticamente con el ID del primer libro de la búsqueda, pero cuando el usuario clickea otro libro en el ejemplo anterior, 
+      el valor se actualiza manualmente con <code>set()</code>. Este signal enlazado luego alimenta a <code>bookDetailResource</code> 
+      que carga los detalles del libro seleccionado. Cuando cambia <code>booksResource</code> (nueva búsqueda), el linkedSignal 
+      se reinicializa automáticamente al primer libro de los nuevos resultados, manteniendo la sincronización. Este patrón es 
+      esencial para estados UI que necesitan valores por defecto computados pero que pueden ser sobreescritos por interacción del usuario.
+    </p>
+
+    @if (bookDetailResource.isLoading()) {
+      <div class="loading">Cargando detalles del libro...</div>
+    }
+    @if (bookDetailResource.value(); as details) {
+      <div class="detail-card">
+        <h3>{{ details.title }}</h3>
+        <p>{{ details.description }}</p>
+        <div class="rating">Calificación: {{ details.rating }} / 5</div>
+        <div class="reviews">
+          <h4>Reseñas:</h4>
+          @for (review of details.reviews; track $index) {
+            <p class="review">{{ review }}</p>
+          }
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- Ejemplo 4: Flujos Observable con toSignal -->
+  <section class="example-card">
+    <h2>4. Flujos Observable con toSignal()</h2>
+    <p class="description">
+      toSignal() convierte observables de RxJS a signals, funcionando sin problemas con HttpClient de Angular.
+      Gestiona automáticamente las suscripciones según el ciclo de vida del componente
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> Este ejemplo muestra cómo integrar Observables de RxJS con las Resource APIs. Aunque 
+      Angular 19+ introduce recursos nativos, muchas APIs y bibliotecas existentes retornan Observables (especialmente HttpClient). 
+      La estrategia aquí es envolver el Observable en una Promesa dentro del resource loader. Cuando cambia <code>categoryId</code>, 
+      el resource se recarga automáticamente, llamando al servicio <code>getBooksByCategory()</code> que retorna un Observable. 
+      Este patrón es útil durante migraciones graduales de código basado en RxJS hacia la nueva arquitectura de signals. El resource 
+      maneja la suscripción y desuscripción automáticamente, evitando memory leaks. Para casos donde no se necesita la reactividad 
+      completa de resource(), también se puede usar directamente <code>toSignal()</code> que convierte cualquier Observable en un signal 
+      de solo lectura, como veremos en ejemplos posteriores.
+    </p>
+
+    <div class="controls">
+      <button (click)="changeCategory(1)">Ficción</button>
+      <button (click)="changeCategory(2)">Ciencia</button>
+      <button (click)="changeCategory(3)">Historia</button>
+    </div>
+
+    @if (categoryBooksResource.isLoading()) {
+      <div class="loading">Cargando libros de categoría...</div>
+    }
+    @if (categoryBooksResource.value(); as books) {
+      <div class="simple-list">
+        @for (book of books; track book.id) {
+          <div class="list-item">{{ book.title }} - ${{ book.price }}</div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Ejemplo 5: Integración de Servicio de Estado -->
+  <section class="example-card">
+    <h2>5. Tienda de Libros - Servicio de Estado con Resources</h2>
+    <p class="description">
+      Gestión de estado centralizada usando un servicio con APIs de resource.
+      Soporta signal de estado de palabra clave actual y datos compartidos entre componentes
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> Este ejemplo demuestra el patrón de "State Service" moderno usando Resource APIs. El servicio 
+      <code>BookStoreService</code> actúa como una capa de gestión de estado centralizada donde se define un signal 
+      <code>currentKeyword</code> y un <code>allBooksResource</code> que reacciona a cambios en ese signal. Múltiples componentes 
+      pueden inyectar este servicio y acceder al mismo estado compartido. La búsqueda implementa debouncing (300ms) usando RxJS para 
+      evitar peticiones excesivas mientras el usuario escribe. El componente expone el estado del servicio mediante getters, separando 
+      la lógica de negocio de la presentación. Este patrón es superior a los antiguos servicios con BehaviorSubjects porque los signals 
+      son más eficientes, tienen mejor integración con el change detection, y los resources manejan automáticamente loading states, 
+      errores y cancelación. Es ideal para aplicaciones escalables donde múltiples componentes necesitan compartir y sincronizar estado.
+    </p>
+
+    <div class="controls">
+      <input 
+        type="text"
+        [value]="currentKeyword"
+        (input)="searchBooks($any($event.target).value)"
+        placeholder="Buscar en la tienda"
+      />
+    </div>
+
+    <div class="status-info">
+      <span class="badge">Estado: {{ allBooksStatus }}</span>
+      <span class="badge">Palabra clave: "{{ currentKeyword }}"</span>
+    </div>
+
+    @if (allBooks; as books) {
+      <div class="store-grid">
+        @for (book of books; track book.id) {
+          <div class="store-book">
+            <strong>{{ book.title }}</strong>
+            <span>${{ book.price }}</span>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Ejemplo 6: Streaming con WebSocket usando resource -->
+  <section class="example-card">
+    <h2>6. Streaming con resource() y WebSockets</h2>
+    <p class="description">
+      Demuestra streaming basado en promesas con resource(), incluyendo
+      limpieza adecuada mediante AbortSignal
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> Este ejemplo simula una conexión WebSocket usando resource() con Promesas. Aunque es una simulación 
+      con <code>setInterval</code>, el patrón es idéntico al de WebSockets reales. El loader retorna una Promesa que se resuelve cuando 
+      se reciben 5 mensajes (1 por segundo). Lo crucial aquí es el manejo de <code>params.abortSignal</code>: se registra un listener 
+      que cancela el interval cuando el signal se dispara (por reload o destrucción del componente). Esto previene memory leaks y 
+      conexiones huérfanas. El <code>wsMessageCount</code> signal se usa para generar diferentes mensajes en cada stream, demostrando 
+      cómo los resources pueden usar múltiples signals como entrada. Al hacer click en "Iniciar Nuevo Stream", se incrementa el contador 
+      y se llama a <code>reload()</code>, cancelando el stream anterior e iniciando uno nuevo. Este patrón es fundamental para manejar 
+      conexiones persistentes (WebSockets, Server-Sent Events, long polling) de forma segura y reactiva.
+    </p>
+
+    <div class="controls">
+      <button (click)="reloadWebSocket()">Iniciar Nuevo Stream</button>
+    </div>
+
+    @if (wsResource.isLoading()) {
+      <div class="loading">Conectando al stream...</div>
+    }
+    @if (wsResource.value(); as messages) {
+      <div class="message-list">
+        @for (msg of messages; track $index) {
+          <div class="message">{{ msg }}</div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Ejemplo 7: toSignal con flujo Observable -->
+  <section class="example-card">
+    <h2>7. Streaming en Tiempo Real con toSignal()</h2>
+    <p class="description">
+      toSignal() para streaming basado en observables proporciona actualizaciones de datos en tiempo real
+      como precios de acciones o notificaciones en vivo con limpieza automática
+    </p>
+    <p class="explanation">
+      <strong>Implementación:</strong> Este ejemplo utiliza <code>toSignal()</code> para convertir directamente un Observable en un signal 
+      de solo lectura. El servicio <code>getStockPriceStream()</code> retorna un Observable que emite precios cada 1.5 segundos usando 
+      <code>interval()</code> de RxJS. Al usar <code>toSignal()</code> con <code>initialValue: 0</code>, se crea un signal que se actualiza 
+      automáticamente con cada emisión del Observable. La ventaja sobre resource() es la simplicidad cuando no se necesitan capacidades 
+      de reload o set. La suscripción se maneja automáticamente: se crea cuando el componente se inicializa y se cancela cuando se destruye, 
+      sin necesidad de código manual de limpieza. Este patrón es perfecto para datos de streaming continuo (cotizaciones bursátiles, 
+      métricas en tiempo real, notificaciones push) donde el flujo de datos es constante y unidireccional. El template se actualiza 
+      reactivamente usando <code>stockPrice</code> sin paréntesis (getter), mostrando el precio formateado con dos decimales. Es la 
+      forma más limpia de integrar el mundo reactivo de RxJS con el nuevo sistema de signals de Angular.
+    </p>
+
+    <div class="price-display">
+      <h3>Precio Actual de Acción</h3>
+      <div class="price-value">${{ stockPrice.toFixed(2) }}</div>
+    </div>
+  </section>
+
+  <section class="info-card">
+    <h3>Conceptos Clave Cubiertos:</h3>
+    <ul>
+      <li>✓ Función resource() para datos asíncronos basados en Promesas</li>
+      <li>✓ Signals status() e isLoading() para seguimiento de estado</li>
+      <li>✓ Método reload() para refrescar datos</li>
+      <li>✓ Método set() para actualizar valores locales</li>
+      <li>✓ Integración de AbortSignal para cancelación</li>
+      <li>✓ Resources con parámetros dinámicos (reactivos)</li>
+      <li>✓ Manejo de errores en resources</li>
+      <li>✓ linkedSignal() para signals escribibles derivados</li>
+      <li>✓ toSignal() para flujos de datos basados en Observables</li>
+      <li>✓ Servicios de estado con resources</li>
+      <li>✓ Streaming WebSocket con Promesas</li>
+      <li>✓ Actualizaciones en tiempo real con toSignal()</li>
+    </ul>
+  </section>
+</div>

@@ -1,0 +1,101 @@
+<h2>Servicios con Estado: BehaviorSubject vs Signals</h2>
+
+<p><strong>Servicios Stateful:</strong> Los servicios con estado mantienen y gestionan datos compartidos entre componentes. Tradicionalmente se usaban BehaviorSubjects de RxJS, pero signals ofrecen una alternativa más simple y reactiva sin necesidad de suscripciones manuales.</p>
+
+<div class="comparison-container">
+  <div class="comparison-section">
+    <h3>Enfoque Tradicional: BehaviorSubject</h3>
+    <div class="code-example">
+      <pre><code>// Servicio con BehaviorSubject
+private itemsSubject = new BehaviorSubject&lt;Item[]&gt;([]);
+items$ = this.itemsSubject.asObservable();
+
+// Componente necesita suscribirse
+ngOnInit() &#123;
+  this.service.items$.subscribe(items =&gt; &#123;
+    this.items = items;
+  &#125;);
+&#125;
+
+// Importante: limpiar suscripciones
+ngOnDestroy() &#123;
+  this.subscriptions.unsubscribe();
+&#125;</code></pre>
+    </div>
+    <app-cart-rxjs></app-cart-rxjs>
+  </div>
+
+  <div class="comparison-section">
+    <h3>Enfoque Moderno: Signals</h3>
+    <div class="code-example">
+      <pre><code>// Servicio con Signals
+private itemsSignal = signal&lt;Item[]&gt;([]);
+items = this.itemsSignal.asReadonly();
+
+// Computed signals automáticos
+total = computed(() =&gt; 
+  this.items().reduce(...)  
+);
+
+// Componente: acceso directo sin suscripciones
+// En el template se accede directamente a los signals
+// service.items() y service.total()</code></pre>
+    </div>
+    <app-cart-signal></app-cart-signal>
+  </div>
+</div>
+
+<div class="comparison-table">
+  <h3>Comparación Directa</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Característica</th>
+        <th>BehaviorSubject</th>
+        <th>Signals</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Suscripciones</td>
+        <td>Manuales (subscribe)</td>
+        <td>Automáticas</td>
+      </tr>
+      <tr>
+        <td>Lifecycle hooks</td>
+        <td>OnInit, OnDestroy requeridos</td>
+        <td>No necesarios</td>
+      </tr>
+      <tr>
+        <td>Memoria</td>
+        <td>Gestión manual (unsubscribe)</td>
+        <td>Gestión automática</td>
+      </tr>
+      <tr>
+        <td>Valores derivados</td>
+        <td>Operadores RxJS (map, combineLatest)</td>
+        <td>Computed signals</td>
+      </tr>
+      <tr>
+        <td>Complejidad</td>
+        <td>Mayor (pipes, operators)</td>
+        <td>Menor (simple y directo)</td>
+      </tr>
+      <tr>
+        <td>Performance</td>
+        <td>Buena</td>
+        <td>Mejor (más eficiente)</td>
+      </tr>
+      <tr>
+        <td>Compatibilidad</td>
+        <td>Toda versión de Angular</td>
+        <td>Angular 16+</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="recommendation">
+  <h3>Recomendación</h3>
+  <p>Para nuevos proyectos con Angular 16+, <strong>usa Signals</strong> en servicios stateful. Son más simples, más eficientes y reducen el boilerplate. Reserva RxJS para casos complejos de programación reactiva como streams de eventos, debouncing, o múltiples fuentes asíncronas.</p>
+</div>

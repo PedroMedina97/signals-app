@@ -1,0 +1,90 @@
+:host {
+  display: block;
+  border: 2px solid #666;
+  margin: 10px 0;
+  
+  // Estilos cuando está activo (aplicado por [class.active])
+  &.active {
+    border-color: #4CAF50;
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+    transform: scale(1.02);
+  }
+  
+  // Estilos cuando está resaltado (aplicado por [class.highlighted])
+  &.highlighted {
+    border-color: #FFC107;
+    box-shadow: 0 0 15px rgba(255, 193, 7, 0.5);
+  }
+  
+  // Cuando está activo Y resaltado
+  &.active.highlighted {
+    border-color: #FF5722;
+    box-shadow: 0 0 25px rgba(255, 87, 34, 0.6);
+  }
+}
+
+.highlight-content {
+  h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 20px;
+  }
+
+  p {
+    margin: 8px 0;
+    color: #555;
+    font-size: 14px;
+  }
+
+  .instructions {
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    border-left: 4px solid #2196F3;
+
+    p {
+      margin: 5px 0;
+      font-size: 13px;
+      color: #333;
+    }
+  }
+
+  .event-log {
+    margin-top: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 15px;
+    border-radius: 8px;
+
+    h5 {
+      margin: 0 0 10px 0;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .log-entries {
+      max-height: 150px;
+      overflow-y: auto;
+      background-color: #1E1E1E;
+      padding: 10px;
+      border-radius: 5px;
+
+      .log-item {
+        color: #00FF00;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        padding: 4px 0;
+        border-bottom: 1px solid #333;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &.empty {
+          color: #888;
+          font-style: italic;
+        }
+      }
+    }
+  }
+}
